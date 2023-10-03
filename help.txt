@@ -1,0 +1,170 @@
+# 
+# /bin Příkazy nutné pro administraci a fungování systému.
+# /boot Jádro a soubory nutné pro zavedení jádra.
+# /dev Soubory zařízení.
+# /etc Konfigurační soubory.
+# /home Domovské adresáře uţivatelů.
+# /lib Sdílené knihovny a součásti kompilátoru.
+# /mnt Přípojný bod pro dočasné diskové oblasti.
+# /proc Virtuální adresář, obrazy všech běţících procesů.
+# /opt Nepovinné, doplňkové balíčky a aplikačním softwarem.
+# /root Domovský adresář uţivatele root.
+# /sbin Důleţité spustitelné soubory nutné pro start, opravu a zotavení systému.
+# /tmp Dočasné a pracovní soubory.
+# /usr Hierarchie sekundárních souborů a příkazů.
+# /usr/bin Většina příkazů a spustitelných soborů.
+# /usr/lib Knihovny a podpůrné soubory pro standardní programy.
+# /usr/local Lokální software.
+# /usr/sbin Soubory a programy pro správu systému, které jsou méně důleţité.
+# /var Proměnné data a soubory specifické pro daný systém.
+# /var/log Různé systémové soubory s logy.
+# /var/tmp Další prostor pro přechodné soubory.
+############################################################################
+# cp - command for copy cp /etc/passwd uzivatele - first name of the file  
+#      that we want to copy, second argument name or path of file and location 
+# mv - command for rename or moving, for example mv stary novy, if i want it
+# to move i need to type it like this mv stary /home/han/novy
+# find /repository -name project - najde soubor v repozitory 
+# head and tail, command for e.x 5-10 line is head -10 file | tail -n +5
+# sort - will sort by ascii, sort help | head -10 | tail -n +5
+# uniq - will filter duplicity
+# grep - will try to find in file key word grep 'vyznam' file
+# diff colors.1 colors.2 - will try to find differences between two files
+# rules - 4 - r 2 - w 1 - x
+# 
+# 4000 Nastavení identifikačního čísla uţivatele, kdyţ je program spuštěn (setuid)
+# 2000 Nastavení identifikačního čísla skupiny, kdyţ je program spuštěn (setgid)
+# 1000 Nastavení sticky bitu
+# 0400 Vlastník můţe soubor číst; vypsat obsah adresáře
+# 0200 Vlastník můţe do souboru zapisovat; vytvářet a mazat poloţky v adresáři
+# 0100 Vlastník můţe soubor spouštět; vstup do adresáře
+# 0040 Skupina můţe soubor číst nebo vypsat obsah adresáře
+# 0020 Skupina můţe do souboru zapisovat; vytvářet a mazat poloţky v adresáři
+# 0010 Skupina můţe soubor spouštět; vstup do adresáře
+# 0004 Ostatní mohou soubor číst nebo vypsat obsah adresáře
+# 0002 Ostatní mohou do souboru zapisovat
+# 0001 Ostatní mohou soubor spouštět; vstup do adresáře
+# chmod u=rw,g=r,o= textik
+# chmod 640 textik
+# steuid bit (SUID) a setgid bit (SGID) program bude spousten s pravy
+# vlastnika skupiny, jen binarni programy
+# chown student textik - will change a owner to a file 
+# chgrp users textik - will change a group of owners to a file 
+# newgrp students - will change a user to a new group
+# Připravený Proces by mohl běţet kdyby byl procesor k dispozici.
+# Běţící Proces vyuţívá procesor.
+# Blokovaný Proces čeká na nějaký zdroj (někdy je nazýván čekající).
+# Zombie Proces ukončil svůj běh, ale jeho stav ještě nebyl zpracován.
+# Zastaven Proces je zastaven a neusiluje o procesor (Stopped).
+# ./textik - spusti se program
+# sleep 10 - sleep for 10s 
+# sleep 10 & - sleep for 10s and send it to backround
+# jobs - show processes
+# sleep 10 jobs bg %1 sleep for 10s show jobs and send it to backround stop 
+# fg - move process to foreground
+# ps - show proces id 
+# nice - nice -n 5 ./textik set a priority -20 highest +19 lowest
+# renice change priority while running
+# alias - make a keybind shortcut alias dir = 'ls'
+# cat kniha skripta > obsah - output in obsah
+# $# Počet argumentů.
+$0 Jméno příkazu.
+$1, $2, ..., $9 Jednotlivé argumenty příkazu (poziční parametry).
+$* Seznam argumentů chápaný jako jedno slovo.
+$@ Seznam všech argumentů chápaný jako posloupnost slov.
+$? Návratový kód posledního příkazu.
+$$ Identifikace aktuálního procesu.
+# #!/bin/bash
+# 
+#!/bin/bash
+
+# Funkce pro zjištění, který soubor je novější
+compare_files() {
+    if [[ "$1" -nt "$2" ]]; then
+        echo "Soubor $1 je novější než soubor $2."
+        newer_file="$1"
+        older_file="$2"
+    else
+        echo "Soubor $2 je novější než soubor $1."
+        newer_file="$2"
+        older_file="$1"
+    fi
+}
+
+# Zkontrolujte, jestli existují dva soubory
+if [[ ! -f "$1" || ! -f "$2" ]]; then
+    echo "Jeden nebo oba soubory neexistují."
+    exit 1
+fi
+
+# Zjistěte, který soubor je novější
+compare_files "$1" "$2"
+
+# Zeptejte se uživatele na způsob komprese
+read -p "Jakým způsobem chcete zabalit soubor ($newer_file)? (bzip2/gzip): " compression_method
+
+if [[ "$compression_method" != "bzip2" && "$compression_method" != "gzip" ]]; then
+    echo "Neplatný výběr způsobu komprese. Zadejte 'bzip2' nebo 'gzip'."
+    exit 1
+fi
+
+# Zabalte soubor vybranou metodou
+compressed_file="${newer_file}.${compression_method}"
+if [[ "$compression_method" == "bzip2" ]]; then
+    bzip2 "$newer_file"
+else
+    gzip "$newer_file"
+fi
+
+echo "Soubor $newer_file byl zabaleno jako $compressed_file."
+
+# Zeptejte se na název složky
+read -p "Zadejte název složky pro uložení zabalěného souboru: " folder_name
+
+# Zkontrolujte existenci složky nebo vytvořte novou
+if [[ ! -d "$folder_name" ]]; then
+    mkdir -p "$folder_name"
+fi
+
+# Přesuňte zabalěný soubor do složky
+mv "$compressed_file" "$folder_name/"
+
+# Zobrazte obsah složky
+echo "Obsah složky '$folder_name':"
+ls "$folder_name"
+# hard one - ln /etc/fstab ~/hard_link_fstab
+# symbol one - ln -s /etc/fstab ~/hard_link_fstab
+# ls /bin/d* /etc/p* > soubory.txt
+# tar -czvf soubor.tar.gz soubor -c vytvoreni archivu -z gzip -v verbose -f
+# specifikace azvu vystupu archivu
+# tar -cjvf soubor.tar.bz2 soubor j- bzip2
+# tar -xzvf soubor.tar.gz dekomprimace
+# tar -xjvf soubor.tar.bz2 dekomprimace
+# crontab -e min hod dny mes denvtydnu
+# disk
+# sudo lsblk
+# sudo fdisk /dev/sdX  # Nahraďte "X" písmenem, které odpovídá vašemu
+ IDE disku (např. /dev/sdb)
+# vytvor disky
+# sudo mkfs.ext4 /dev/sdX1  # Pro primární oddíl
+sudo mkfs.ext4 /dev/sdX5  # Pro první logický oddíl
+sudo mkfs.ext4 /dev/sdX6  # Pro druhý logický oddíl
+# sudo mkdir /mnt/primary
+sudo mkdir /mnt/logical1
+sudo mkdir /mnt/logical2
+# sudo mount /dev/sdX1 /mnt/primary
+sudo mount /dev/sdX5 /mnt/logical1
+sudo mount /dev/sdX6 /mnt/logical2
+# automaticke pripojeni pri startu 
+# sudo nano /etc/fstab
+# /dev/sdX1 /mnt/primary ext4 defaults 0 0
+/dev/sdX5 /mnt/logical1 ext4 defaults 0 0
+/dev/sdX6 /mnt/logical2 ext4 defaults 0 0
+# sudo touch /mnt/primary/info.txt
+# sudo touch /mnt/logical1/userlist.txt
+# sudo adduser username
+# sudo -u username
+# su username
+# userdel -r username
+
+
