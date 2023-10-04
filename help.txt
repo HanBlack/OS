@@ -203,4 +203,69 @@ fi
 
 echo "Pc bude vypnuto za $shutdown_time minut"
 shutdown -h now
+# sudo dpkg -i /cesta/k/debian-balik.deb lokalni medium
+# umask 022 skupiny jen pro cteni 
+# vytvoreni konfiguracni souboru linuxu
+#!/bin/bash
+
+# Adresář pro zálohy
+zalohy_adresar="/zalohy"
+# Datum pro jméno zálohy
+datum=$(date +'%Y-%m-%d')
+
+# Vytvoření adresáře pro zálohy, pokud neexistuje
+mkdir -p "$zalohy_adresar"
+
+# Zálohování konfiguračních souborů do archivu
+tar -cjf "$zalohy_adresar/konfigurace_$datum.tar.bz2" /etc
+
+# Vytvoření souboru obsah.txt s výpisem obsahu záložního archivu
+tar -tf "$zalohy_adresar/konfigurace_$datum.tar.bz2" > "$zalohy_adresar/obsah.txt"
+
+# Přidání seznamu aktuálně přihlášených uživatelů na konec souboru obsah.txt
+who >> "$zalohy_adresar/obsah.txt"
+
+echo "Záloha byla vytvořena v adresáři $zalohy_adresar/konfigurace_$datum.tar.bz2"
+# uvedte oba zpusoby vymazani nepotřebnych stařenych baličku v debianu
+# sudo apt-get autoremove
+# sudo apt-get remove nepotrebnypackage pomoci deborphan
+# jakym prikazem promazete slozku /tmp jedorazove ve ctvrtek v 9:35 hod
+# echo "rm -rf /tmp/*" | at 09:35 next thursday
+# #!/bin/bash
+
+# Vytvoření složky "prvni" a kopie souborů
+mkdir -p prvni
+cp /etc/apt/sources.list prvni/
+cp /etc/fstab prvni/
+
+# Vytvoření složky "druha" a souboru struktura.txt s adresářovou strukturou
+mkdir -p druha
+find / -type d > druha/struktura.txt
+
+echo "Soubory a složky byly vytvořeny."
+# velikost souboru 
+#!/bin/bash
+
+# Zeptat se uživatele, podle čeho vyhledávat
+echo "Chcete vyhledávat podle názvu nebo velikosti? (n/v)"
+read volba
+
+if [ "$volba" == "n" ]; then
+    # Vyhledávání podle názvu
+    echo "Zadejte název souboru pro vyhledávání:"
+    read nazev
+    find /home -type f -name "$nazev" > vyhledavani.txt
+    echo "Výsledky vyhledávání podle názvu byly uloženy v souboru vyhledavani.txt."
+
+elif [ "$volba" == "v" ]; then
+    # Vyhledávání podle velikosti
+    echo "Zadejte velikost souboru pro vyhledávání (např. +10M pro soubory větší než 10MB):"
+    read velikost
+    find /home -type f -size "$velikost" > vyhledavani.txt
+    echo "Výsledky vyhledávání podle velikosti byly uloženy v souboru vyhledavani.txt."
+
+else
+    echo "Neplatná volba."
+fi
+
 
