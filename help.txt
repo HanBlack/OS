@@ -166,5 +166,41 @@ sudo mount /dev/sdX6 /mnt/logical2
 # sudo -u username
 # su username
 # userdel -r username
+# #!/bin/bash/env bash
 
+read -p "Vytvořeni symbolickeho linku (s) nebo trvaly link (t)" Link_type
+
+if [ "$Link_type" != "s" ] && [ "$Link_type" !="t" ]; then
+echo "Neplatny typ linku, pouzij s pro symbolicky a t pro trvaly link"
+exit 1
+fi
+
+read -p "Zadejte zdrojovou cestu: " source_path
+
+if [ ! -e "$source_path" ]; then
+echo "Zdrojova cesta neexistuje"
+exit 1
+fi
+
+read -p "nazev linku" Link_name
+
+if [ "$Link_type" = "s" ]; then
+ln -s "$source_path" "$Link_name"
+echo "Symbolicky link byl vytvoren"
+fi
+
+if [ "$Link_type" = "t" ]; then
+ln "$source_path" "$Link_name"
+echo "Trvaly link byl vytvoren"
+fi
+
+read -p "Za jak douho chcete vypnout pc v min" shutdown_time
+
+if [[ "$shutdown_time" =~ ^[0-9]+$]]; then
+echo "Neplatny čas"
+exit 1
+fi
+
+echo "Pc bude vypnuto za $shutdown_time minut"
+shutdown -h now
 
